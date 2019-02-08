@@ -26,9 +26,13 @@ def extract_movies(dom):
     - Actors/actresses (comma separated if more than one)
     - Runtime (only a number!)
     """
-    # print(dom.h3.a.text) #Print filmtitel uit eerste h3
-    for titles in dom.find_all('h3')
-    	print dom.a.titles
+
+    # Put all movies in a list
+    movie_list = (dom.find_all('div', {'class': 'lister-item mode-advanced'}))
+    for movie in movie_list:
+    	print(movie.h3.a.text)
+    	print(movie.find('div', {'class': 'ratings-bar'}).strong.text)
+    	print(str(movie.h3.find('span', {'class': 'lister-item-year text-muted unbold'}).text).strip('()'))
 	
     # ADD YOUR CODE HERE TO EXTRACT THE ABOVE INFORMATION ABOUT THE
     # HIGHEST RATED MOVIES
