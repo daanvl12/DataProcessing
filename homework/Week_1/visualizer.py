@@ -1,6 +1,6 @@
 #!/usr/bin/env python
-# Name:
-# Student number:
+# Name: Daan van Lanschot
+# Student number: 12486124
 """
 This script visualizes data obtained from a .csv file
 """
@@ -23,10 +23,16 @@ with open(INPUT_CSV, newline = '') as csvfile:
 	
 	# Find movie production year and append the rating to the corresponding dictionary key
 	for row in reader:
-		data_dict[(row['Year'])].append(float.valueof(row['Rating'])
+		data_dict[(row['Year'])].append(float(row['Rating']))
 
-	for key in data_dict:
-		mean = float(sum(data_dict[key]) / len(data_dict[key]))
+	# Convert to average scores
+	for year in data_dict:
+		mean_rating = float(sum(data_dict[year]) / len(data_dict[year]))
+		data_dict[year] = mean_rating
 
 if __name__ == "__main__":
-    print(data_dict)
+	plt.axis([-1, 10, 5, 10])
+	plt.ylabel('Average Rating')
+	plt.xlabel('Year of Release')
+	plt.plot(*zip(*sorted(data_dict.items())), 'bo')
+	plt.show()

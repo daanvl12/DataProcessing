@@ -30,27 +30,36 @@ def extract_movies(dom):
 
 	# Put all movies in a list
 	movie_list = (dom.find_all('div', {'class': 'lister-item mode-advanced'}))
+	
+	# If successful, proceed
 	if movie_list:
+		
+		# Create list for extracted information
 		movie_list_extracted = []
 		
-		# Iterate over movies in list, extract information and add to list
+		# Iterate over movies in list, extract information and add to extraction list
 		for movie in movie_list:
-			info = movie.h3.a.text.replace(',', '') + "," + movie.find('div', {'class': 'ratings-bar'}).strong.text + "," + re.findall('\d+', movie.h3.find('span', {'class': 'lister-item-year text-muted unbold'}).text)[0] + "," + re.findall('\d+', movie.find('span', {'class': 'runtime'}).text)[0]
+			
+			# Retrieve required information
+			title = movie.h3.a.text.replace(',', '')
+			rating = movie.find('div', {'class': 'ratings-bar'}).strong.text
+			year = re.findall('\d+', movie.h3.find('span', {'class': 'lister-item-year text-muted unbold'}).text)[0]
+			actors = movie.p.find_next_sibling('p').find_next_sibling('p').get_text().split('Stars:')
+			if len(actors) == 2:
+				actors = actors[1].replace("\n", "")
+			else:
+				actors = 'None'
+			runtime = re.findall('\d+', movie.find('span', {'class': 'runtime'}).text)[0]
+			
+			# Create string and add to movie list
+			info = title + "," + rating + "," + year + "," + actors + "," + runtime
 			movie_list_extracted.append(info)
-			# Title
-			 #print(movie.h3.a.text.replace(',', ''))
-			# Rating
-			 #print(movie.find('div', {'class': 'ratings-bar'}).strong.text)
-			# Year of release
-			 #re.findall('\d+', movie.h3.find('span', {'class': 'lister-item-year text-muted unbold'}).text)[0]
-			 #print(str(movie.h3.find('span', {'class': 'lister-item-year text-muted unbold'}).text).strip('()'))
-			# HIER NOG ACTEURS DOEN!!!!
-			# Runtime
-			 #print(re.findall('\d+', movie.find('span', {'class': 'runtime'}).text)[0])
+			
 		return movie_list_extracted
 
 	else:
 		return None
+		
 
 def save_csv(outfile, movies):
 	"""
@@ -62,8 +71,6 @@ def save_csv(outfile, movies):
 	# Iterate over all movies and write value to row
 	for movie in movies:
 		writer.writerow([movie])
-
-	# ADD SOME CODE OF YOURSELF HERE TO WRITE THE MOVIES TO DISK
 
 
 def simple_get(url):
