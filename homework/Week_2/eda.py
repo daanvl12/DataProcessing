@@ -32,10 +32,16 @@ data_pd_clean["GDP ($ per capita) dollars"] = data_pd_clean["GDP ($ per capita) 
 data_pd_clean["Pop. Density (per sq. mi.)"] = data_pd_clean["Pop. Density (per sq. mi.)"].str.replace(',', '.')
 data_pd_clean = data_pd_clean.apply(pd.to_numeric, errors ='ignore')
 
-print(data_pd_clean.dtypes)
+# Remove outliers
+data_pd_clean["Pop. Density (per sq. mi.)"] = data_pd_clean["Pop. Density (per sq. mi.)"][data_pd_clean["Pop. Density (per sq. mi.)"].between(data_pd_clean["Pop. Density (per sq. mi.)"].quantile(.01), data_pd_clean["Pop. Density (per sq. mi.)"].quantile(.99))]
+data_pd_clean["Infant mortality (per 1000 births)"] = data_pd_clean["Infant mortality (per 1000 births)"][data_pd_clean["Infant mortality (per 1000 births)"].between(data_pd_clean["Infant mortality (per 1000 births)"].quantile(.01), data_pd_clean["Infant mortality (per 1000 births)"].quantile(.99))]
+data_pd_clean["GDP ($ per capita) dollars"] = data_pd_clean["GDP ($ per capita) dollars"][data_pd_clean["GDP ($ per capita) dollars"].between(data_pd_clean["GDP ($ per capita) dollars"].quantile(.01), data_pd_clean["GDP ($ per capita) dollars"].quantile(.99))]
+data_pd_clean = data_pd_clean.dropna()
+
+print(data_pd_clean)
 
 # Plot the data
 ax = plt.gca()
-data_pd_clean.plot(kind = 'scatter', x = 'Infant mortality (per 1000 births)', y = 'GDP ($ per capita) dollars', ax = ax)
+data_pd_clean.plot(kind = 'scatter', x = 'Pop. Density (per sq. mi.)', y = "Infant mortality (per 1000 births)", ax = ax)
 #data_pd_clean.plot(kind ='line', x = 'Country', y = 'Infant mortality (per 1000 births)', color = 'red', ax = ax)
 plt.show()
