@@ -10,38 +10,63 @@ import matplotlib.pyplot as plt
 import numpy as np
 from scipy import stats
 import pandas as pd
+import json
 
 # Global constants for the input file
 INPUT_CSV = "input.csv"
+country = "Country"
+region = "Region"
+population = "Pop. Density (per sq. mi.)"
+infant = "Infant mortality (per 1000 births)"
+gdp = "GDP ($ per capita) dollars"
 
 # Load data into dataframe
 data_pd = pd.read_csv(INPUT_CSV, decimal=',')
-data_pd_columns = data_pd[["Country", "Region", "Pop. Density (per sq. mi.)", "Infant mortality (per 1000 births)", "GDP ($ per capita) dollars"]]
+data_pd_columns = data_pd[[country, region, population, infant, gdp]]
 
 # Empty "unknown" cells, then remove incomplete data
 data_pd_clean = data_pd_columns[data_pd_columns != 'unknown']
 data_pd_clean = data_pd_clean.dropna()
 
 # Remove excess whitespace from region column
-data_pd_clean["Region"] = data_pd_clean["Region"].str.strip()
+data_pd_clean[region] = data_pd_clean[region].str.strip()
 
 # Remove word dollar from GDP list
-data_pd_clean["GDP ($ per capita) dollars"] = data_pd_clean["GDP ($ per capita) dollars"].str.rstrip(' dollars')
+data_pd_clean[gdp] = data_pd_clean[gdp].str.rstrip(' dollars')
 
 # Convert dtype to numeric
-data_pd_clean["Pop. Density (per sq. mi.)"] = data_pd_clean["Pop. Density (per sq. mi.)"].str.replace(',', '.')
+data_pd_clean[population] = data_pd_clean[population].str.replace(',', '.')
 data_pd_clean = data_pd_clean.apply(pd.to_numeric, errors ='ignore')
 
 # Remove outliers
-data_pd_clean["Pop. Density (per sq. mi.)"] = data_pd_clean["Pop. Density (per sq. mi.)"][data_pd_clean["Pop. Density (per sq. mi.)"].between(data_pd_clean["Pop. Density (per sq. mi.)"].quantile(.01), data_pd_clean["Pop. Density (per sq. mi.)"].quantile(.99))]
-data_pd_clean["Infant mortality (per 1000 births)"] = data_pd_clean["Infant mortality (per 1000 births)"][data_pd_clean["Infant mortality (per 1000 births)"].between(data_pd_clean["Infant mortality (per 1000 births)"].quantile(.01), data_pd_clean["Infant mortality (per 1000 births)"].quantile(.99))]
-data_pd_clean["GDP ($ per capita) dollars"] = data_pd_clean["GDP ($ per capita) dollars"][data_pd_clean["GDP ($ per capita) dollars"].between(data_pd_clean["GDP ($ per capita) dollars"].quantile(.01), data_pd_clean["GDP ($ per capita) dollars"].quantile(.99))]
+data_pd_clean[population] = data_pd_clean[population][data_pd_clean[population].between(data_pd_clean[population].quantile(.01), data_pd_clean[population].quantile(.99))]
+data_pd_clean[infant] = data_pd_clean[infant][data_pd_clean[infant].between(data_pd_clean[infant].quantile(.01), data_pd_clean[infant].quantile(.99))]
+data_pd_clean[gdp] = data_pd_clean[gdp][data_pd_clean[gdp].between(data_pd_clean[gdp].quantile(.01), data_pd_clean[gdp].quantile(.99))]
 data_pd_clean = data_pd_clean.dropna()
 
-print(data_pd_clean)
+# Calculate different GDP values
+mean_GDP = data_pd_clean[gdp].mean()
+median_GDP = data_pd_clean[gdp].median()
+mode_GDP = data_pd_clean[gdp].mode()[0]
+sd_GDP = data_pd_clean[gdp].std()
 
-# Plot the data
-ax = plt.gca()
-data_pd_clean.plot(kind = 'scatter', x = 'Pop. Density (per sq. mi.)', y = "Infant mortality (per 1000 births)", ax = ax)
-#data_pd_clean.plot(kind ='line', x = 'Country', y = 'Infant mortality (per 1000 births)', color = 'red', ax = ax)
+print("\n GDP Central Tendency\n", "GDP Mean:", mean_GDP, "\n", "GDP Median:", median_GDP, "\n", "GDP Mode:", mode_GDP, "\n", "GDP SD:", sd_GDP)
+
+# Calculate Five Number Summary
+minimum_IM = data_pd_clean[infant].min()
+FQ_IM = data_pd_clean[infant].quantile(0.25)
+median_IM = data_pd_clean[infant].median()
+TQ_IM = data_pd_clean[infant].quantile(0.75)
+maximum_IM = data_pd_clean[infant].max()
+
+print("\n Infant Mortality Five Number Summary\n", "IM Min:", minimum_IM, "\n", "IM FQ:", FQ_IM, "\n", "IM Median:", median_IM, "\n", "IM TQ:", TQ_IM, "\n", "IM Max:", maximum_IM)
+
+# Create and display both figures
+hist_GDP = data_pd_clean[gdp].plot.hist()
 plt.show()
+boxplot_IM = data_pd_clean[infant].plot.box()
+plt.show()
+
+# Export to JSON
+data_pd_json = data_pd_clean.set_index(country)
+data_pd_json.to_json(r'C:\Programmeren\DataProcessing\Homework\Week_2\output.json', orient = 'index')
