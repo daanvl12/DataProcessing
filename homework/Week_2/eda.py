@@ -87,13 +87,15 @@ def five_number_summary(datafile, column, q1, q2):
 
 	return [minimum_IM, FQ_IM, median_IM, TQ_IM, maximum_IM]
 
-def plot_graph(datafile, column, type):
+def plot_graph(datafile, column, type, title_text):
 	
 	# Create graph from column and show
 	if type == 'hist':
 		graph = datafile[column].plot.hist()
+		graph.set_title(title_text)
 	elif type == 'box':
 		graph = datafile[column].plot.box()
+		graph.set_title(title_text)
 	else:
 		return
 	
@@ -138,8 +140,8 @@ if __name__ == "__main__":
 	print("\n Infant Mortality Five Number Summary\n IM Min:", IM_FNS[0], "\n IM FQ:", IM_FNS[1], "\n IM Median:", IM_FNS[2], "\n IM TQ:", IM_FNS[3], "\n IM Max:", IM_FNS[4])
 
 	# Print histogram for GDP and boxplot for Infant Mortality
-	plot_graph(data_pd_clean, gdp, "hist")
-	plot_graph(data_pd_clean, infant, "box")
+	plot_graph(data_pd_clean, gdp, "hist", "Histogram showing GDP frequency")
+	plot_graph(data_pd_clean, infant, "box", "Boxplot showing Infant Mortality frequency")
 
 	# Store processed dataframe in JSON file
 	save_json(data_pd_clean, country, r'C:\Programmeren\DataProcessing\Homework\Week_2\output.json')
