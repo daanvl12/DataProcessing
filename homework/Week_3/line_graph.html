@@ -18,6 +18,7 @@ This script visualizes data obtained from the KNMI
 		</canvas>
 
 		<script>
+			// Create global variables
 			var fileName = "output.json";
 			var txtFile = new XMLHttpRequest();
 			var dateList = []
@@ -57,6 +58,7 @@ This script visualizes data obtained from the KNMI
 				        var object1 = JSON.parse(txtFile.responseText);
 				        var objLen = Object.keys(object1).length
 				        
+				        // create arrays with dates and temperature values
 				        for (var j = 0; j < objLen; j++)
 				        {
 				        	dateList.push(Object.keys(object1)[j]);
@@ -71,7 +73,7 @@ This script visualizes data obtained from the KNMI
 				        tempDomain = [(Math.min(...tempList)), (Math.max(...tempList))];
 				        tempRange = [375, 25];
 				        dateDomain = [0, objLen];
-				        dateRange = [50, 925];
+				        dateRange = [75, 925];
 
 				        const canvas = document.getElementById('knmi_line');
 						const ctx = canvas.getContext('2d');
@@ -79,7 +81,7 @@ This script visualizes data obtained from the KNMI
 						// declare graph start and end  
 						var GRAPH_TOP = 25;  
 						var GRAPH_BOTTOM = 375;  
-						var GRAPH_LEFT = 50;  
+						var GRAPH_LEFT = 75;  
 						var GRAPH_RIGHT = 925;      
 						var GRAPH_HEIGHT = 350;   
 						var GRAPH_WIDTH = 900;           
@@ -91,7 +93,7 @@ This script visualizes data obtained from the KNMI
 						ctx.moveTo(GRAPH_LEFT, GRAPH_BOTTOM);  
 						ctx.lineTo(GRAPH_LEFT, GRAPH_TOP);   
 						
-						// make your graph look less jagged  
+						// make the graph look less jagged  
 						ctx.lineJoin = "round";  
 						ctx.strokeStyle = "black"; 
 
@@ -103,24 +105,89 @@ This script visualizes data obtained from the KNMI
 						{
 							ctx.lineTo(dateCoor(l), tempCoor(tempList[l]));
 						}
+
+						// Pixel height for different temperature values (Y axis)
+						var zeroPoint = tempCoor(0);
+						var tenPoint = tempCoor(10);
+						var twenPoint = tempCoor(20);
+						var thirPoint = tempCoor(30);
+						ctx.stroke();
+
+						// draw reference lines, in lighter color, at 0, 10, 20, 30 degrees
+						ctx.beginPath()
+						ctx.strokeStyle = "#BBB";
+						ctx.moveTo( GRAPH_LEFT, zeroPoint );      
+						ctx.lineTo( GRAPH_RIGHT, zeroPoint );
+
+						ctx.moveTo( GRAPH_LEFT, tenPoint );      
+						ctx.lineTo( GRAPH_RIGHT, tenPoint );
+
+						ctx.moveTo( GRAPH_LEFT, twenPoint );      
+						ctx.lineTo( GRAPH_RIGHT, twenPoint );
+
+						ctx.moveTo( GRAPH_LEFT, thirPoint );      
+						ctx.lineTo( GRAPH_RIGHT, thirPoint );
+						ctx.stroke();
+						ctx.beginPath();
+						ctx.strokeStyle = 'black';
+
+						// Calculate average temp and draw average temp line in red
+						var sumTemp = 0;
+						for(var m = 0; m < tempList.length; m++) 
+						{
+						    sumTemp += tempList[m];
+						}
+						var averageTemp = sumTemp / tempList.length; 
+						var avgPoint = tempCoor(averageTemp)
+						ctx.beginPath()
+						ctx.strokeStyle = "red";
+						ctx.moveTo( GRAPH_LEFT, avgPoint );      
+						ctx.lineTo( GRAPH_RIGHT, avgPoint );
+						ctx.stroke();
+						ctx.beginPath();
+						ctx.strokeStyle = 'black';
+
+						// draw degree markers y-axis
+						ctx.font = 'bold 15px serif'
+						ctx.fillText( "-4.6", GRAPH_LEFT - 40, GRAPH_BOTTOM);
+						ctx.fillText( "0", GRAPH_LEFT - 25, zeroPoint);
+						ctx.fillText( "10", GRAPH_LEFT - 30, tenPoint);
+						ctx.fillText( "20", GRAPH_LEFT - 30, twenPoint);
+						ctx.fillText( "30", GRAPH_LEFT - 30, thirPoint);
+						ctx.fillText( "Avg.", GRAPH_LEFT - 30, avgPoint);
+
+						// find year markers and draw according line indicators 
+						var jan16 = dateCoor(365)
+						var jan17 = dateCoor(730)
+						var jan18 = dateCoor(1095)
+						var jan19 = dateCoor(1460)
+						ctx.moveTo(GRAPH_LEFT, GRAPH_BOTTOM);
+						ctx.lineTo(GRAPH_LEFT, GRAPH_BOTTOM + 15);
+						ctx.moveTo(jan16, GRAPH_BOTTOM);
+						ctx.lineTo(jan16, GRAPH_BOTTOM + 15);
+						ctx.moveTo(jan17, GRAPH_BOTTOM);
+						ctx.lineTo(jan17, GRAPH_BOTTOM + 15);
+						ctx.moveTo(jan18, GRAPH_BOTTOM);
+						ctx.lineTo(jan18, GRAPH_BOTTOM + 15);
+						ctx.moveTo(jan19, GRAPH_BOTTOM);
+						ctx.lineTo(jan19, GRAPH_BOTTOM + 15);
+
+						// Place year text between year markers
+						ctx.fillText( "2015", (jan16 - GRAPH_LEFT) / 2 + GRAPH_LEFT - 20, GRAPH_BOTTOM + 15);
+						ctx.fillText( "2016", (jan17 - jan16) / 2 + jan16 - 20, GRAPH_BOTTOM + 15);
+						ctx.fillText( "2017", (jan18 - jan17) / 2 + jan17 - 20, GRAPH_BOTTOM + 15);
+						ctx.fillText( "2018", (jan19 - jan18) / 2 + jan18 - 20, GRAPH_BOTTOM + 15);
 						
 						// Titles
 						ctx.font = 'bold 20px serif'
 						ctx.fillText( "Time ---------->", GRAPH_LEFT, GRAPH_BOTTOM + 50);
-						ctx.fillText( "Temperatures in De Bilt, 2015 - 2017", GRAPH_RIGHT / 3, GRAPH_TOP);
+						ctx.fillText( "Temperatures in De Bilt, 2015 - 2018", GRAPH_RIGHT / 3, GRAPH_TOP);
 						ctx.save();
 						ctx.translate(-325, 275);
 						ctx.rotate(-Math.PI/2);
 						ctx.textAlign = "center";
-						ctx.fillText( "Temperature ---------->", 0, GRAPH_BOTTOM - 35);
-						ctx.restore();      
-						
-						// draw reference lines
-						ctx.moveTo( GRAPH_LEFT, ( GRAPH_HEIGHT ) / 2 + GRAPH_TOP );      
-						ctx.lineTo( GRAPH_RIGHT, ( GRAPH_HEIGHT ) / 2 + GRAPH_TOP );
-
-						ctx.moveTo( GRAPH_LEFT, ( GRAPH_HEIGHT ) / 4 + GRAPH_TOP );      
-						ctx.lineTo( GRAPH_RIGHT, ( GRAPH_HEIGHT ) / 4 + GRAPH_TOP );
+						ctx.fillText( "Temperature (degree C) ---------->", 0, GRAPH_BOTTOM - 35);
+						ctx.restore();      					
 
 						// draw graph*/
 						ctx.stroke();  
