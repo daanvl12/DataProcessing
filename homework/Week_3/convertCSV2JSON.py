@@ -1,7 +1,7 @@
 # Name: Daan van Lanschot
 # Student number: 12486124
 """
-This script visualizes data obtained from the KNMI
+This script processes data obtained from the KNMI
 """
 
 import numpy as np

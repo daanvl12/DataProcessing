@@ -1,0 +1,93 @@
+<!--
+Name: Daan van Lanschot
+Student number: 12486124
+"""
+This script visualizes data obtained from the KNMI
+"""
+-->
+
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>KNMI Max Temperature report: 2015 - 2017</title>
+	</head>
+	<body>
+
+		<canvas id="knmi_line" width="1000" height="450">
+			
+		</canvas>
+
+		<script>
+			var fileName = "output.json";
+			var txtFile = new XMLHttpRequest();
+			var dateList = []
+			var tempList = []
+			
+			txtFile.onreadystatechange = function() 
+			{
+			    if (txtFile.readyState === 4 && txtFile.status == 200) 
+				    {
+				        var object1 = JSON.parse(txtFile.responseText);
+				        dateList.push(Object.keys(object1));
+				       	tempList.push(Object.values(object1));
+				    }
+
+			}
+			txtFile.open("GET", fileName);
+			txtFile.send();
+
+			console.log(dateList)
+			console.log(tempList)
+
+			const canvas = document.getElementById('knmi_line');
+			const context = canvas.getContext('2d');
+
+			// declare graph start and end  
+			var GRAPH_TOP = 25;  
+			var GRAPH_BOTTOM = 375;  
+			var GRAPH_LEFT = 25;  
+			var GRAPH_RIGHT = 925;      
+			var GRAPH_HEIGHT = 350;   
+			var GRAPH_WIDTH = 900;           
+			
+			// draw X and Y axis  
+			context.beginPath();  
+			context.moveTo( GRAPH_LEFT, GRAPH_BOTTOM );  
+			context.lineTo( GRAPH_RIGHT, GRAPH_BOTTOM );
+			context.moveTo( GRAPH_LEFT, GRAPH_BOTTOM );  
+			context.lineTo( GRAPH_LEFT, GRAPH_TOP );
+
+			// declare test data set and get length    
+			var arrayLen = tempList.length;     
+			// calculate largest piece of data
+			var largest = 0;  
+			for( var i = 0; i < arrayLen; i++ )
+				{      
+					if( tempList[ i ] > largest )
+						{          
+							largest = tempList[ i ];      
+						}  
+				}    
+			context.beginPath();   
+			
+			// make your graph look less jagged  
+			context.lineJoin = "round";  
+			context.strokeStyle = "black";   
+			
+			// add first point in the graph  
+			context.moveTo( GRAPH_LEFT, ( GRAPH_HEIGHT - tempList[ 0 ] / largest * GRAPH_HEIGHT ) + GRAPH_TOP );
+
+			// loop over data and add points starting from the 2nd index in the array as the first has been added already  
+			for( var i = 1; i < arrayLen; i++ )
+				{      
+					context.lineTo( GRAPH_RIGHT / arrayLen * i + GRAPH_LEFT, ( GRAPH_HEIGHT - tempList[ i ] / largest * GRAPH_HEIGHT ) + GRAPH_TOP );  
+				}     
+			
+			// draw graph
+			context.stroke();  
+			
+		</script>
+
+	</body>
+</html>
+
