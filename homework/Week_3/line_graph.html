@@ -22,70 +22,112 @@ This script visualizes data obtained from the KNMI
 			var txtFile = new XMLHttpRequest();
 			var dateList = []
 			var tempList = []
+			var tempDomain = []
+			var tempRange = []
+			var dateDomain = []
+			var dateRange = []
 			
+			function createTransform(domain, range){
+				// domain is a two-element array of the data bounds [domain_min, domain_max]
+				// range is a two-element array of the screen bounds [range_min, range_max]
+				// this gives you two equations to solve:
+				// range_min = alpha * domain_min + beta
+				// range_max = alpha * domain_max + beta
+			 	// a solution would be:
+
+			    var domain_min = domain[0]
+			    var domain_max = domain[1]
+			    var range_min = range[0]
+			    var range_max = range[1]
+
+			    // formulas to calculate the alpha and the beta
+			   	var alpha = (range_max - range_min) / (domain_max - domain_min)
+			    var beta = range_max - alpha * domain_max
+
+			    // returns the function for the linear transformation (y= a * x + b)
+			    return function(x){
+			      return alpha * x + beta;
+			    }
+			}
+
 			txtFile.onreadystatechange = function() 
 			{
 			    if (txtFile.readyState === 4 && txtFile.status == 200) 
 				    {
 				        var object1 = JSON.parse(txtFile.responseText);
-				        dateList.push(Object.keys(object1));
-				       	tempList.push(Object.values(object1));
-				    }
+				        var objLen = Object.keys(object1).length
+				        
+				        for (var j = 0; j < objLen; j++)
+				        {
+				        	dateList.push(Object.keys(object1)[j]);
+				        }
 
-			}
-			txtFile.open("GET", fileName);
-			txtFile.send();
+				        for (var i = 0; i < objLen; i++)
+				        {
+				        	tempList.push(Object.values(object1)[i]['Temperature']);
+				        }
 
-			console.log(dateList)
-			console.log(tempList)
+				        // calculate domain & range
+				        tempDomain = [(Math.min(...tempList)), (Math.max(...tempList))];
+				        tempRange = [375, 25];
+				        dateDomain = [0, objLen];
+				        dateRange = [50, 925];
 
-			const canvas = document.getElementById('knmi_line');
-			const context = canvas.getContext('2d');
+				        const canvas = document.getElementById('knmi_line');
+						const ctx = canvas.getContext('2d');
 
-			// declare graph start and end  
-			var GRAPH_TOP = 25;  
-			var GRAPH_BOTTOM = 375;  
-			var GRAPH_LEFT = 25;  
-			var GRAPH_RIGHT = 925;      
-			var GRAPH_HEIGHT = 350;   
-			var GRAPH_WIDTH = 900;           
-			
-			// draw X and Y axis  
-			context.beginPath();  
-			context.moveTo( GRAPH_LEFT, GRAPH_BOTTOM );  
-			context.lineTo( GRAPH_RIGHT, GRAPH_BOTTOM );
-			context.moveTo( GRAPH_LEFT, GRAPH_BOTTOM );  
-			context.lineTo( GRAPH_LEFT, GRAPH_TOP );
+						// declare graph start and end  
+						var GRAPH_TOP = 25;  
+						var GRAPH_BOTTOM = 375;  
+						var GRAPH_LEFT = 50;  
+						var GRAPH_RIGHT = 925;      
+						var GRAPH_HEIGHT = 350;   
+						var GRAPH_WIDTH = 900;           
+						
+						// draw X and Y axis  
+						ctx.beginPath();  
+						ctx.moveTo(GRAPH_LEFT, GRAPH_BOTTOM);  
+						ctx.lineTo(GRAPH_RIGHT, GRAPH_BOTTOM);
+						ctx.moveTo(GRAPH_LEFT, GRAPH_BOTTOM);  
+						ctx.lineTo(GRAPH_LEFT, GRAPH_TOP);   
+						
+						// make your graph look less jagged  
+						ctx.lineJoin = "round";  
+						ctx.strokeStyle = "black"; 
 
-			// declare test data set and get length    
-			var arrayLen = tempList.length;     
-			// calculate largest piece of data
-			var largest = 0;  
-			for( var i = 0; i < arrayLen; i++ )
-				{      
-					if( tempList[ i ] > largest )
-						{          
-							largest = tempList[ i ];      
-						}  
-				}    
-			context.beginPath();   
-			
-			// make your graph look less jagged  
-			context.lineJoin = "round";  
-			context.strokeStyle = "black";   
-			
-			// add first point in the graph  
-			context.moveTo( GRAPH_LEFT, ( GRAPH_HEIGHT - tempList[ 0 ] / largest * GRAPH_HEIGHT ) + GRAPH_TOP );
+						// draw first point
+						var tempCoor = createTransform(tempDomain, tempRange);
+						var dateCoor = createTransform(dateDomain, dateRange);
+						ctx.moveTo(dateCoor(0), tempCoor(tempList[0]))
+						for (var l = 1; l < objLen; l++)
+						{
+							ctx.lineTo(dateCoor(l), tempCoor(tempList[l]));
+						}
+						
+						// Titles
+						ctx.font = 'bold 20px serif'
+						ctx.fillText( "Time ---------->", GRAPH_LEFT, GRAPH_BOTTOM + 50);
+						ctx.fillText( "Temperatures in De Bilt, 2015 - 2017", GRAPH_RIGHT / 3, GRAPH_TOP);
+						ctx.save();
+						ctx.translate(-325, 275);
+						ctx.rotate(-Math.PI/2);
+						ctx.textAlign = "center";
+						ctx.fillText( "Temperature ---------->", 0, GRAPH_BOTTOM - 35);
+						ctx.restore();      
+						
+						// draw reference lines
+						ctx.moveTo( GRAPH_LEFT, ( GRAPH_HEIGHT ) / 2 + GRAPH_TOP );      
+						ctx.lineTo( GRAPH_RIGHT, ( GRAPH_HEIGHT ) / 2 + GRAPH_TOP );
 
-			// loop over data and add points starting from the 2nd index in the array as the first has been added already  
-			for( var i = 1; i < arrayLen; i++ )
-				{      
-					context.lineTo( GRAPH_RIGHT / arrayLen * i + GRAPH_LEFT, ( GRAPH_HEIGHT - tempList[ i ] / largest * GRAPH_HEIGHT ) + GRAPH_TOP );  
-				}     
-			
-			// draw graph
-			context.stroke();  
-			
+						ctx.moveTo( GRAPH_LEFT, ( GRAPH_HEIGHT ) / 4 + GRAPH_TOP );      
+						ctx.lineTo( GRAPH_RIGHT, ( GRAPH_HEIGHT ) / 4 + GRAPH_TOP );
+
+						// draw graph*/
+						ctx.stroke();  
+					}      	
+				}
+				txtFile.open("GET", fileName);
+				txtFile.send();
 		</script>
 
 	</body>
